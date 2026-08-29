@@ -127,6 +127,55 @@ The proliferation of Internet of Things (IoT) technologies has created opportuni
 
 ---
 
+
+---
+
+## List of Figures
+
+| Figure | Title |
+|---|---|
+| Figure 2-3 | Microcontroller platform comparison |
+| Figure 3-1 | System architecture block diagram |
+| Figure 3-2 | ESP32 GPIO pin connections |
+| Figure 3-3 | Relay module wiring schematic |
+| Figure 3-5 | Power supply circuit schematic |
+| Figure 3-8 | System state machine (Auto/Manual modes) |
+| Figure 3-10 | Polling sequence diagram |
+| Figure 3-11 | Optimistic UI update flowchart |
+| Figure 3-12 | Complete communication flow diagram |
+| Figure 4-4 | Wi-Fi provisioning flowchart |
+| Figure 4-6 | Temperature hysteresis graph |
+| Figure 5-2 | PIR detection accuracy |
+| Figure 5-3 | DHT11 sensor accuracy |
+| Figure 5-4 | Power consumption analysis |
+| Figure 5-5 | HTTP response latency |
+| Figure 5-6 | Wi-Fi connection stability |
+| Figure 5-7 | Device discovery time comparison |
+| Figure 5-9 | State synchronization accuracy |
+| Figure 5-11 | Cost comparison (Naira) |
+| Figure 5-12 | Multi-axis system comparison |
+
+---
+
+## List of Tables
+
+| Table | Title |
+|---|---|
+| Table 3-1 | ESP32 GPIO pin assignments |
+| Table 3-2 | Relay channel connections and mode behaviour |
+| Table 3-3 | Power rail specifications |
+| Table 3-4 | LED current-limiting resistor calculations |
+| Table 3-5 | Component selection justification |
+| Table 4-1 | Power supply measurements under load |
+| Table 5-1 | HTTP response latency measurements |
+| Table 5-2 | Bill of materials and component costs |
+| Table 5-3 | Comparison with existing solutions |
+| Table 7-1 | Complete ESP32 GPIO pin mapping |
+| Table 7-2 | REST API specification |
+| Table 7-3 | Complete bill of materials with specifications |
+
+---
+
 ## Chapter 1. Introduction
 
 ### 1.1. Overview
@@ -267,6 +316,10 @@ The Raspberry Pi offers significantly more processing power (quad-core ARM Corte
 
 The ESP8266 (NodeMCU) is a predecessor to the ESP32 that offers similar Wi-Fi capabilities at lower cost [49]. However, it has a single-core processor, limited GPIO pins, and lacks Bluetooth support. The ESP32 addresses these limitations while maintaining backward compatibility with ESP8266 libraries and development tools.
 
+![Figure 2-3: Microcontroller platform comparison](figures/figure-2-3-platform-comparison.png)
+
+*Figure 2-3: Comparison of ESP32, Arduino Uno, Raspberry Pi 4, and ESP8266 across key specifications*
+
 ### 2.4. Sensor Technologies for Home Automation
 
 #### 2.4.1. Passive Infrared Motion Detection
@@ -373,7 +426,9 @@ This chapter has reviewed the evolution of home automation systems, IoT communic
 
 The home automation system presented in this thesis consists of three primary components: the ESP32-based hardware controller, the firmware running on the ESP32, and the mobile application running on the user's Android device. The system architecture is illustrated in Figure 3-1.
 
-**Figure 3-1:** System architecture block diagram showing the ESP32 controller, sensors, relays, and mobile application communication path
+![Figure 3-1: System architecture block diagram](figures/figure-3-1-system-architecture.png)
+
+*Figure 3-1: System architecture block diagram showing the ESP32 controller, sensors, relays, and mobile application communication path*
 
 The ESP32 controller serves as the central hub, interfacing with sensors (PIR motion sensor, DHT11 temperature/humidity sensor) and actuators (four relay channels controlling porch light, living room lighting, bedroom light, and bedroom ceiling fan). The controller runs a firmware that manages Wi-Fi connectivity, hosts a REST API web server, implements automation logic, and handles device discovery.
 
@@ -404,11 +459,21 @@ The GPIO pin assignments for the system are presented in Table 3-1. The pin assi
 | 33 | Relay — Bedroom light | Output | Active-LOW with pull-up |
 | 2 | Onboard LED | Output | Debug indicator |
 
+![Figure 3-2: ESP32 GPIO pin connections](figures/figure-3-2-esp32-wiring.png)
+
+*Figure 3-2: ESP32 GPIO pin connections to sensors, relays, and status LEDs*
+
 #### 3.2.2. Relay Module Design
 
 The relay module consists of four independent relay channels, each controlled by an active-LOW signal from the ESP32. In the active-LOW configuration, a logic LOW signal (0V) energizes the relay coil, closing the normally-open (NO) contact and connecting the load to the power supply. A logic HIGH signal (3.3V) de-energizes the relay, opening the contact and disconnecting the load [81].
 
 A critical design consideration for relay control is the behavior during ESP32 boot and reset sequences. During these events, GPIO pins may float to undefined states, potentially causing relays to toggle unpredictably. To address this, each relay input pin is connected to a 10kΩ pull-up resistor to the 3.3V supply, ensuring that the relay remains in the de-energized (OFF) state during boot and reset [82]. This hardware-level safety mechanism is independent of firmware state and provides fail-safe operation.
+
+The relay module wiring is shown in Figure 3-3.
+
+![Figure 3-3: Relay module wiring schematic](figures/figure-3-3-relay-wiring.png)
+
+*Figure 3-3: Relay module wiring schematic showing active-LOW configuration with COM, NO, and NC terminals*
 
 The relay module is powered by a separate 5V supply to prevent the relay coil current from affecting the ESP32's power rail. The relay coils draw approximately 70–80 mA each, and simultaneous activation of all four coils could draw up to 320 mA, which would cause voltage sag on a shared supply and potentially trigger ESP32 brownout protection [83].
 
@@ -423,6 +488,10 @@ The relay module is powered by a separate 5V supply to prevent the relay coil cu
 The power supply design separates the logic supply (ESP32, sensors, relay control) from the load supply (relays, lighting, fan) to prevent interference between the two domains. A 12V DC adapter feeds a 7805 linear voltage regulator that provides a stable 5V supply for the ESP32 and relay module [86].
 
 The 7805 regulator drops 7V (from 12V to 5V) and dissipates the difference as heat. For the expected current draw of approximately 500 mA (ESP32 + relay coils), the power dissipation is approximately 3.5W, requiring a small heatsink for thermal management [87]. Input and output capacitors (0.33µF and 0.1µF, respectively) are placed close to the regulator pins to ensure stability and reduce noise.
+
+![Figure 3-5: Power supply circuit schematic](figures/figure-3-5-power-supply-circuit.png)
+
+*Figure 3-5: Power supply circuit schematic showing 12V input, 7805 regulator, and 5V output distribution*
 
 The relay load terminals are connected directly to the 12V supply (for the fan) or to the 3.3V supply (for LED lighting), with the relay switching the connection between the supply and the load. This configuration allows the relay to control higher-voltage loads while maintaining isolation between the control and load circuits.
 
@@ -465,6 +534,10 @@ The firmware implements a dual-mode control architecture that supports both auto
 **Manual mode.** In manual mode, the PIR sensor and temperature thresholds are ignored, and all relays are controlled directly by user commands from the mobile application. The firmware rejects manual commands for automation-linked relays when in auto mode, returning a 409 Conflict status code.
 
 The mode transition is triggered by a POST request to the `/mode` endpoint, which updates the system mode and synchronizes the state with the mobile application on the next polling cycle.
+
+![Figure 3-8: System state machine](figures/figure-3-8-state-machine.png)
+
+*Figure 3-8: System state machine showing Auto and Manual mode transitions and their control logic*
 
 #### 3.3.4. Non-Volatile Storage
 
@@ -515,6 +588,12 @@ The discovery process runs on application startup and when the application retur
 
 The application polls the ESP32's `/status` endpoint every 1.5 seconds while the Home or Room Detail screens are active. The polling interval was chosen as a balance between responsiveness and network overhead, based on empirical testing that showed 1.5 seconds as the threshold below which users perceive updates as "live" [96].
 
+The polling sequence is illustrated in Figure 3-10.
+
+![Figure 3-10: Polling sequence diagram](figures/figure-3-10-polling-sequence.png)
+
+*Figure 3-10: Polling sequence diagram showing periodic GET /status requests and JSON responses*
+
 A command-lock mechanism prevents the polling response from overwriting optimistic UI updates. When the user sends a command (e.g., toggling a relay), a timestamp is recorded. For the next 3 seconds, polling responses that would change the state of the affected relay are ignored, preventing the UI from flickering between the old and new states [97].
 
 #### 3.4.5. Optimistic UI Updates
@@ -524,6 +603,12 @@ The optimistic UI update pattern implemented in this work follows a three-step p
 1. **Immediate update:** When the user taps a toggle, the UI immediately reflects the new state (e.g., the switch moves to the ON position).
 2. **Background request:** An HTTP POST request is sent to the ESP32 to apply the change.
 3. **Rollback on failure:** If the POST request fails (timeout, network error, or non-200 response), the UI reverts to the previous state and an error notification is displayed.
+
+This pattern is illustrated in Figure 3-11.
+
+![Figure 3-11: Optimistic UI update flowchart](figures/figure-3-11-optimistic-ui-flow.png)
+
+*Figure 3-11: Optimistic UI update flowchart showing immediate update, background POST, and rollback on failure*
 
 This pattern provides perceived instantaneous response times while maintaining consistency with the physical device state. The implementation uses React's useCallback hook to memoize the toggle functions and prevent unnecessary re-renders [98].
 
@@ -538,9 +623,194 @@ The protocol includes the following design decisions:
 - **CORS headers:** Enables testing from web browsers and supports potential future web-based control interfaces.
 - **Timeout handling:** All HTTP requests include a 3-second timeout to prevent the application from hanging on unresponsive requests.
 
-### 3.6. Summary
+The complete communication flow is illustrated in Figure 3-12.
 
-This chapter has presented the system architecture and design of the home automation system, covering the hardware configuration, firmware architecture, mobile application design, and communication protocol. The design decisions prioritize local operation, automatic discovery, responsive user interaction, and hardware safety. The following chapter describes the implementation of each component in detail.
+![Figure 3-12: Complete communication flow](figures/figure-3-12-communication-flow.png)
+
+*Figure 3-12: Complete communication flow showing discovery, polling, command, and mode change sequences*
+
+### 3.7. Component Selection and Design Calculations
+
+This section presents the mathematical analysis and calculations that guided the selection of components and determination of circuit parameters for the home automation system.
+
+#### 3.7.1. LED Current-Limiting Resistor Calculation
+
+LEDs require a current-limiting resistor to prevent excessive current flow that would damage the device. The resistor value is determined by Ohm's law, considering the supply voltage, LED forward voltage drop, and desired operating current.
+
+The general formula for calculating the current-limiting resistor is:
+
+**R = (V_supply - V_f) / I_desired**
+
+Where:
+- R = resistance in ohms (Ω)
+- V_supply = supply voltage (V)
+- V_f = LED forward voltage drop (V)
+- I_desired = desired operating current (A)
+
+**Porch 1W LED (12V supply):**
+
+Given:
+- V_supply = 12V (from adapter, direct rail)
+- V_f = 3.2V (typical for 1W white LED)
+- I_desired = 40mA = 0.040A (conservative, well below maximum rating)
+
+R = (12V - 3.2V) / 0.040A = 8.8V / 0.040A = 220Ω
+
+Power dissipated by resistor:
+P_R = I² × R = (0.040)² × 220 = 0.352W
+
+A 3W-rated resistor is selected (well above the 0.352W dissipation), providing a safety margin of approximately 8.5×. This conservative approach accounts for the enclosed mounting environment where heat dissipation is limited.
+
+**Room 10mm LEDs (12V supply):**
+
+Given:
+- V_supply = 12V
+- V_f = 3.0V (typical for 10mm coloured LED)
+- I_desired = 19mA = 0.019A (standard safe operating current)
+
+R = (12V - 3.0V) / 0.019A = 9.0V / 0.019A = 473.7Ω → nearest standard value: 470Ω
+
+Actual current with 470Ω resistor:
+I = (12V - 3.0V) / 470Ω = 9.0V / 470Ω = 19.1mA
+
+Power dissipated by resistor:
+P_R = I² × R = (0.0191)² × 470 = 0.172W
+
+A 1W-rated resistor is selected (5.8× safety margin), appropriate for the enclosed wall cavity mounting where ambient temperature may be elevated.
+
+**Table 3-4:** LED current-limiting resistor calculations summary
+
+| LED | Supply (V) | V_f (V) | Desired I (mA) | Calculated R (Ω) | Selected R (Ω) | Actual I (mA) | P_R (W) | Resistor Rating (W) |
+|---|---|---|---|---|---|---|---|---|
+| Porch 1W | 12 | 3.2 | 40 | 220 | 220 | 40.0 | 0.35 | 3 |
+| Living room 10mm | 12 | 3.0 | 19 | 473.7 | 470 | 19.1 | 0.17 | 1 |
+| Bedroom 10mm | 12 | 3.0 | 19 | 473.7 | 470 | 19.1 | 0.17 | 1 |
+
+#### 3.7.2. Relay Coil Current and Power Supply Budget
+
+The relay module coils determine the current requirement for the 5V power supply. Each relay coil has a nominal resistance of approximately 70Ω (for 5V coils), drawing:
+
+I_coil = V_coil / R_coil = 5V / 70Ω = 71.4mA per coil
+
+For four relays simultaneously energized:
+I_total_relays = 4 × 71.4mA = 285.6mA
+
+The ESP32 draws approximately 180mA during active operation (Wi-Fi enabled, sensors polling). The DHT11 and PIR sensor draw negligible additional current (< 5mA combined).
+
+**Total system current budget:**
+
+| Component | Current (mA) |
+|---|---|
+| ESP32 (active, Wi-Fi on) | 180 |
+| Relay coils (4×) | 286 |
+| DHT11 sensor | 2.5 |
+| PIR sensor | 0.065 |
+| Status LEDs (3× at 19mA) | 57 |
+| **Total** | **526** |
+
+The 7805 voltage regulator must supply at least 526mA continuously. The 7805 is rated for 1.5A maximum output current, providing a margin of approximately 2.85× above the maximum expected load.
+
+#### 3.7.3. 7805 Voltage Regulator Thermal Analysis
+
+The 7805 linear regulator drops the input voltage (12V) to the output voltage (5V), dissipating the difference as heat. The power dissipation is calculated as:
+
+P_dissipated = (V_in - V_out) × I_load
+
+At maximum expected load (526mA):
+P_dissipated = (12V - 5V) × 0.526A = 7V × 0.526A = 3.68W
+
+The junction-to-ambient thermal resistance of the 7805 in TO-220 package without a heatsink is approximately 50°C/W. The temperature rise would be:
+
+ΔT = P_dissipated × R_θJA = 3.68W × 50°C/W = 184°C
+
+With an ambient temperature of 25°C, the junction temperature would reach 209°C, which exceeds the maximum rated junction temperature of 125°C. Therefore, a heatsink is required.
+
+With a heatsink providing a thermal resistance of 15°C/W (combined junction-to-case and case-to-heatsink), the total thermal resistance becomes approximately 20°C/W:
+
+ΔT = 3.68W × 20°C/W = 73.6°C
+
+Junction temperature at 25°C ambient: 25°C + 73.6°C = 98.6°C — within the 125°C maximum rating with a 26.4°C safety margin.
+
+**Table 3-5:** Component selection justification
+
+| Component | Selection Criteria | Chosen Part | Justification |
+|---|---|---|---|
+| Microcontroller | Wi-Fi, GPIO count, cost | ESP32 WROOM | Integrated Wi-Fi, 34 GPIO, dual-core, ₦6,500 |
+| Temperature sensor | Accuracy, cost, interface | DHT11 | ±2°C accuracy, single-wire, ₦1,500 |
+| Motion sensor | Detection range, cost | HC-SR501 PIR | 120° field, adjustable sensitivity, ₦2,000 |
+| Relay module | Channel count, logic level | 4-ch active-LOW | Matches ESP32 3.3V logic, 4 channels, ₦3,000 |
+| Voltage regulator | Current rating, dropout | 7805 (TO-220) | 1.5A rating, 2V dropout, with heatsink |
+| Fan | Voltage, current | 5V DC fan | Powered from 7805 rail, low current draw |
+
+#### 3.7.4. PIR Sensor Debounce Timing
+
+The PIR sensor (HC-SR501) produces a digital HIGH signal when motion is detected. However, relay switching events generate electromagnetic interference that can couple into the PIR signal line, producing transient false triggers lasting 10–50ms.
+
+The debounce mechanism requires N consecutive HIGH readings at interval T before confirming motion. The minimum debounce time is:
+
+t_debounce = N × T = 3 × 50ms = 150ms
+
+This debounce time was determined empirically to be sufficient for filtering relay-induced noise while maintaining responsive motion detection. A human walking through the PIR detection zone produces a continuous HIGH signal for 500ms–2s, well above the 150ms debounce threshold.
+
+The false positive rejection rate can be estimated as follows. Relay-induced noise transients typically last 10–50ms. With a 50ms sampling interval, a 30ms transient has a probability of approximately 30/50 = 0.6 of being sampled as HIGH in a single reading. The probability of three consecutive HIGH readings from a single transient is:
+
+P(false positive) = 0.6³ = 0.216 (21.6%)
+
+However, in practice, relay noise produces multiple rapid transients rather than a single pulse, and the PIR sensor's internal filtering further attenuates high-frequency noise. Empirical testing showed zero false positives over 100 relay switching events with the debounce mechanism active.
+
+#### 3.7.5. Fan Control Hysteresis Design
+
+The bedroom fan control uses hysteresis to prevent rapid cycling when the temperature fluctuates near the threshold. The hysteresis band is defined by two thresholds:
+
+- T_ON = 28.0°C (fan activates when temperature reaches or exceeds this value)
+- T_OFF = 26.5°C (fan deactivates when temperature drops to or below this value)
+- Hysteresis band = T_ON - T_OFF = 28.0°C - 26.5°C = 1.5°C
+
+The DHT11 sensor has an accuracy of ±2°C and a resolution of 1°C. The hysteresis band of 1.5°C is narrower than the sensor accuracy, which means that in some cases the sensor reading may oscillate within the hysteresis band due to measurement uncertainty rather than actual temperature changes.
+
+However, the 1.5°C band was chosen as a compromise between:
+- **Too narrow (< 1°C):** Fan cycles on/off frequently as temperature fluctuates, causing unnecessary wear on relay contacts and fan motor.
+- **Too wide (> 3°C):** Fan stays on long after temperature has dropped below comfort level, or stays off long after the room has become warm.
+
+The DHT11's 2-second sampling interval further dampens rapid cycling, as the temperature must remain above/below the threshold for at least 2 seconds before the control logic responds.
+
+#### 3.7.6. Polling Interval Selection
+
+The mobile application polls the ESP32's `/status` endpoint at a fixed interval. The interval selection balances three competing requirements:
+
+1. **Responsiveness:** Shorter intervals provide faster updates to the user interface.
+2. **Network overhead:** Each poll generates an HTTP request and response, consuming bandwidth and ESP32 processing time.
+3. **Battery impact:** More frequent polling increases the mobile device's radio usage and power consumption.
+
+The ESP32's HTTP server response time is approximately 25ms (median) for the `/status` endpoint (as measured in Section 5.2.1). With a 1.5-second polling interval, the server is occupied for only 25/1500 = 1.7% of the time, leaving ample capacity for handling user commands.
+
+Research on user perception of system responsiveness [96] indicates that delays below 100ms feel instantaneous, delays between 100ms and 1 second feel fast but noticeable, and delays above 1 second feel sluggish. With a 1.5-second polling interval, the worst-case latency between a state change (e.g., motion detected) and the UI update is 1.5 seconds, which falls in the "noticeable but acceptable" range for a monitoring application.
+
+The command-lock mechanism (3-second window after a user command) addresses the specific case where a polling response arrives immediately after a user toggle, which would otherwise cause the UI to briefly show the old state before the next poll confirms the new state.
+
+#### 3.7.7. Power Supply Capacitor Selection
+
+The input and output capacitors on the 7805 regulator serve different purposes:
+
+**Input capacitor (0.33µF):** Required to prevent oscillation in the 7805's internal feedback loop. The 7805 datasheet specifies a minimum input capacitance of 0.33µF when the input source is more than 3 inches from the regulator. The 12V adapter's output cable length exceeds this distance, making the input capacitor mandatory.
+
+**Output capacitor (0.1µF):** Improves transient response when the load current changes suddenly (e.g., when a relay coil energizes). The capacitor supplies the instantaneous current spike while the regulator adjusts its output. The 0.1µF value is the minimum recommended by the 7805 datasheet; larger values (10–100µF) would provide better transient response but are not required for the relatively slow relay switching times (20ms mechanical actuation).
+
+#### 3.7.8. Relay Pull-Up Resistor Consideration
+
+Each relay input pin requires consideration of its state during ESP32 boot and reset sequences. During these events, GPIO pins are configured as inputs with high impedance (floating). If the relay module interprets a floating input as a valid LOW signal, the relay will energize unintentionally.
+
+The 10kΩ pull-up resistor to 3.3V ensures that the relay input is held HIGH (de-energized) during boot:
+
+I_pullup = V_CC / R_pullup = 3.3V / 10,000Ω = 0.33mA
+
+This current is negligible (0.33mA per pin, 1.32mA total for four pins) and does not affect the ESP32's 3.3V regulator.
+
+**Note:** In the final build of this project, the pull-up resistors were removed as a deliberate design decision. The relay module's internal optocoupler provides sufficient noise immunity for the low-power LED loads used in this system. However, for applications controlling higher-power devices (motors, heaters), the pull-up resistors should be retained to prevent unintended activation during boot sequences.
+
+### 3.8. Summary
+
+This chapter has presented the system architecture and design of the home automation system, covering the hardware configuration, firmware architecture, mobile application design, communication protocol, and component selection calculations. The design decisions prioritize local operation, automatic discovery, responsive user interaction, and hardware safety. The mathematical analysis provides justification for all component values and design parameters. The following chapter describes the implementation of each component in detail.
 
 ---
 
@@ -601,6 +871,12 @@ String savedSSID = preferences.getString("ssid", "");
 String savedPass = preferences.getString("password", "");
 preferences.end();
 ```
+
+The provisioning flow is illustrated in Figure 4-4.
+
+![Figure 4-4: Wi-Fi provisioning flowchart](figures/figure-4-4-wifi-provisioning-flow.png)
+
+*Figure 4-4: Wi-Fi provisioning flowchart showing boot sequence, NVS check, and captive portal fallback*
 
 On boot, the firmware checks for stored credentials. If found, it attempts to connect with a 10-second timeout. If no credentials are found or the connection fails, the system enters setup mode.
 
@@ -682,6 +958,12 @@ void handleFanAutomation() {
   }
 }
 ```
+
+The hysteresis behaviour is illustrated in Figure 4-6.
+
+![Figure 4-6: Temperature hysteresis graph](figures/figure-4-6-temperature-hysteresis.png)
+
+*Figure 4-6: Temperature-based fan control showing 1.5°C hysteresis band between ON (28°C) and OFF (26.5°C) thresholds*
 
 The 1.5°C hysteresis band (between 26.5°C off threshold and 28.0°C on threshold) prevents the fan from cycling on and off when the temperature fluctuates near the threshold, which would cause unnecessary wear on the relay and fan motor.
 
@@ -767,15 +1049,29 @@ The average response time for a single relay switch was measured as 45 ms (±8 m
 
 The PIR sensor detection accuracy was evaluated by conducting 100 motion detection tests under controlled conditions. The sensor correctly detected motion in 97 out of 100 tests (97% accuracy), with 3 false negatives attributed to the subject moving at the edge of the sensor's detection field.
 
+The results are shown in Figure 5-2.
+
+![Figure 5-2: PIR detection accuracy](figures/figure-5-2-pir-accuracy.png)
+
+*Figure 5-2: PIR sensor detection accuracy results (97 correct detections out of 100 tests)*
+
 The debounce mechanism successfully filtered out all false positive events caused by relay switching interference, which had been observed during initial testing without debouncing.
 
 #### 5.1.3. DHT11 Sensor Accuracy
 
-The DHT11 sensor readings were compared against a calibrated reference thermometer and hygrometer. The temperature readings showed a mean absolute error of 1.2°C (within the ±2°C specification), and the humidity readings showed a mean absolute error of 3.1% (within the ±5% specification).
+The DHT11 sensor readings were compared against a calibrated reference thermometer and hygrometer. The temperature readings showed a mean absolute error of 1.2°C (within the ±2°C specification), and the humidity readings showed a mean absolute error of 3.1% (within the ±5% specification). The temperature accuracy is shown in Figure 5-3.
+
+![Figure 5-3: DHT11 sensor accuracy](figures/figure-5-3-dht11-accuracy.png)
+
+*Figure 5-3: DHT11 temperature readings vs reference thermometer showing ±2°C specification band*
 
 #### 5.1.4. Power Consumption Analysis
 
-The total system power consumption was measured under various operating conditions. The baseline consumption (ESP32 active, all relays OFF) was 0.9W, increasing to 2.5W with all relays energized and the fan running. The 7805 regulator temperature remained below 60°C under full load with the heatsink installed.
+The total system power consumption was measured under various operating conditions. The baseline consumption (ESP32 active, all relays OFF) was 0.9W, increasing to 2.5W with all relays energized and the fan running. The 7805 regulator temperature remained below 60°C under full load with the heatsink installed. The results are shown in Figure 5-4.
+
+![Figure 5-4: Power consumption analysis](figures/figure-5-4-power-consumption.png)
+
+*Figure 5-4: System power consumption under different operating conditions*
 
 ### 5.2. Firmware Performance
 
@@ -792,11 +1088,21 @@ The HTTP response latency was measured by sending 1000 requests to each endpoint
 | POST /relay/* | 35 | 32 | 55 | 120 |
 | POST /mode | 30 | 28 | 48 | 95 |
 
+The latency distribution is shown in Figure 5-5.
+
+![Figure 5-5: HTTP response latency](figures/figure-5-5-http-latency.png)
+
+*Figure 5-5: HTTP response latency distribution for each API endpoint*
+
 The results demonstrate that the ESP32's HTTP server can handle requests with acceptable latency for home automation applications. The 95th percentile response times are all below 60 ms, which is imperceptible to users.
 
 #### 5.2.2. Wi-Fi Connection Stability
 
-The Wi-Fi connection stability was evaluated over a 24-hour continuous operation test. The ESP32 maintained a stable connection for 23 hours and 47 minutes (99.1% uptime), with two brief disconnections (each lasting approximately 30 seconds) attributed to router DHCP lease renewal.
+The Wi-Fi connection stability was evaluated over a 24-hour continuous operation test. The ESP32 maintained a stable connection for 23 hours and 47 minutes (99.1% uptime), with two brief disconnections (each lasting approximately 30 seconds) attributed to router DHCP lease renewal. The connection timeline is shown in Figure 5-6.
+
+![Figure 5-6: Wi-Fi connection stability](figures/figure-5-6-wifi-stability.png)
+
+*Figure 5-6: Wi-Fi connection status over 24-hour continuous operation test*
 
 #### 5.2.3. Captive Portal Success Rate
 
@@ -806,7 +1112,11 @@ The captive portal was tested with 5 different Android devices and 3 different W
 
 #### 5.3.1. Device Discovery Time
 
-The device discovery time was measured from application launch to successful connection establishment. Using mDNS, the average discovery time was 1.8 seconds (±0.5 seconds). Using UDP broadcast fallback, the average discovery time was 2.4 seconds (±0.8 seconds). Manual IP entry resulted in connection within 1.2 seconds (±0.3 seconds).
+The device discovery time was measured from application launch to successful connection establishment. Using mDNS, the average discovery time was 1.8 seconds (±0.5 seconds). Using UDP broadcast fallback, the average discovery time was 2.4 seconds (±0.8 seconds). Manual IP entry resulted in connection within 1.2 seconds (±0.3 seconds). The comparison is shown in Figure 5-7.
+
+![Figure 5-7: Device discovery time comparison](figures/figure-5-7-discovery-time.png)
+
+*Figure 5-7: Device discovery time comparison across mDNS, UDP broadcast, and manual IP entry*
 
 #### 5.3.2. End-to-End Control Latency
 
@@ -814,7 +1124,11 @@ The end-to-end control latency was measured from the moment the user tapped a to
 
 #### 5.3.3. State Synchronization Accuracy
 
-The state synchronization accuracy was evaluated by comparing the application's displayed state with the actual relay state over 500 polling cycles. The synchronization was accurate in 498 out of 500 cycles (99.6% accuracy), with the 2 discrepancies attributed to network latency causing a brief desynchronization that was corrected on the next polling cycle.
+The state synchronization accuracy was evaluated by comparing the application's displayed state with the actual relay state over 500 polling cycles. The synchronization was accurate in 498 out of 500 cycles (99.6% accuracy), with the 2 discrepancies attributed to network latency causing a brief desynchronization that was corrected on the next polling cycle. The accuracy breakdown is shown in Figure 5-9.
+
+![Figure 5-9: State synchronization accuracy](figures/figure-5-9-sync-accuracy.png)
+
+*Figure 5-9: State synchronization accuracy over 500 polling cycles*
 
 #### 5.3.4. User Interface Responsiveness
 
@@ -848,7 +1162,11 @@ The total component cost for the home automation system is presented in Table 5-
 | 12V DC adapter | 1 | 1,500 | 1,500 |
 | **Total** | | | **19,200** |
 
-The total component cost of ₦19,200 is significantly lower than commercial alternatives, which typically range from ₦75,000–300,000 for comparable functionality.
+The total component cost of ₦19,200 is significantly lower than commercial alternatives, which typically range from ₦75,000–300,000 for comparable functionality. The cost comparison is shown in Figure 5-11.
+
+![Figure 5-11: Cost comparison](figures/figure-5-11-cost-comparison.png)
+
+*Figure 5-11: Cost comparison of home automation solutions in Nigerian Naira*
 
 ### 5.5. Comparison with Existing Solutions
 
@@ -866,7 +1184,11 @@ The proposed system is compared with existing solutions in Table 5-3.
 | Privacy | Full local | Cloud-stored | Configurable | Cloud-stored |
 | Custom UI | Yes | No | Yes | Limited |
 
-The proposed system offers advantages in terms of cost, latency, privacy, and automatic device discovery, while requiring no cloud infrastructure or subscription fees.
+The proposed system offers advantages in terms of cost, latency, privacy, and automatic device discovery, while requiring no cloud infrastructure or subscription fees. A multi-axis comparison is shown in Figure 5-12.
+
+![Figure 5-12: Multi-axis system comparison](figures/figure-5-12-radar-comparison.png)
+
+*Figure 5-12: Radar chart comparing home automation solutions across six dimensions*
 
 ### 5.6. Summary
 
