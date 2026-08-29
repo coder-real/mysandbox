@@ -19,7 +19,15 @@ The proliferation of Internet of Things (IoT) technologies has created opportuni
 
 ## Acknowledgements
 
-[Acknowledgements content here]
+I would like to express my sincere gratitude to my supervisor, [Supervisor's Name], for the guidance, patience, and encouragement throughout this research. Their feedback shaped the direction of this work in ways I did not anticipate at the outset.
+
+I am grateful to the Department of [Department Name] at [University Name] for providing the laboratory facilities and technical resources that made the hardware prototyping possible. The staff in the electronics workshop were always willing to help with component sourcing and soldering equipment.
+
+I acknowledge my colleagues in the research group for the many informal discussions that helped refine my thinking on IoT system design. In particular, the conversations about ESP32 firmware challenges saved me considerable debugging time.
+
+I thank my family for their unwavering support and patience during the long hours spent in the laboratory and at the writing desk. Their encouragement kept me going when the relay circuits refused to cooperate.
+
+Finally, I acknowledge the broader open-source community whose work on ESP32 libraries, React Native, and the Arduino ecosystem made this project feasible. The documentation and examples shared by other developers were invaluable throughout the development process.
 
 ---
 
@@ -180,7 +188,11 @@ The proliferation of Internet of Things (IoT) technologies has created opportuni
 
 ### 1.1. Overview
 
-The concept of home automation has evolved significantly over the past two decades, transitioning from simple timer-based electrical switches to sophisticated networked systems capable of intelligent decision-making. The emergence of the Internet of Things (IoT) paradigm has been the primary catalyst for this transformation, enabling everyday household devices to connect to networks, exchange data, and respond to user commands remotely [1]. According to recent market analysis, the global smart home market was valued at approximately $79 billion in 2020 and is projected to reach $313 billion by 2026, reflecting a compound annual growth rate of over 25% [2]. This growth is driven by increasing consumer demand for convenience, energy efficiency, security, and the declining cost of microcontroller and sensor technologies.
+The concept of home automation has evolved significantly over the past two decades, transitioning from simple timer-based electrical switches to sophisticated networked systems capable of intelligent decision-making. The emergence of the Internet of Things (IoT) paradigm has been the primary catalyst for this transformation, enabling everyday household devices to connect to networks, exchange data, and respond to user commands remotely [1]. According to recent market analysis, the global smart home market was valued at approximately $79 billion in 2020 and is projected to reach $313 billion by 2026, reflecting a compound annual growth rate of over 25% [2]. This growth is driven by increasing consumer demand for convenience, energy efficiency, security, and the declining cost of microcontroller and sensor technologies. The market growth trend is shown in Figure 1-1.
+
+![Figure 1-1: Smart home market growth](figures/figure-1-1-market-growth.png)
+
+*Figure 1-1: Global smart home market value growth from 2018 to 2026 (projected)*
 
 Home automation systems typically encompass several functional domains: lighting control, climate management, security monitoring, and appliance automation [3]. Among these, lighting control represents the most fundamental and widely adopted use case, as it directly impacts daily comfort and energy consumption. The U.S. Energy Information Administration reports that residential lighting accounts for approximately 10% of total household electricity consumption [4], and automated lighting systems that respond to occupancy and ambient conditions have demonstrated energy savings of 30–50% in controlled studies [5].
 
@@ -192,7 +204,11 @@ This thesis presents the design, implementation, and evaluation of a complete Io
 
 The Internet of Things refers to the network of physical objects embedded with sensors, software, and connectivity capabilities that enable them to collect and exchange data [8]. In the residential context, IoT technologies form the foundation of smart home systems, where devices such as thermostats, lighting fixtures, security cameras, and appliances are connected to a central hub or network for coordinated control and monitoring.
 
-The architecture of IoT systems can be broadly categorized into three layers: the perception layer (sensors and actuators), the network layer (communication protocols and infrastructure), and the application layer (user interfaces and data processing) [9]. Each layer presents distinct design challenges and trade-offs that influence system performance, reliability, and user experience.
+The architecture of IoT systems can be broadly categorized into three layers: the perception layer (sensors and actuators), the network layer (communication protocols and infrastructure), and the application layer (user interfaces and data processing) [9]. Each layer presents distinct design challenges and trade-offs that influence system performance, reliability, and user experience. The three-layer architecture is shown in Figure 1-2.
+
+![Figure 1-2: IoT architecture layers](figures/figure-1-2-iot-architecture.png)
+
+*Figure 1-2: Three-layer IoT architecture showing perception, network, and application layers*
 
 At the perception layer, the selection of sensors and actuators determines the system's sensing capabilities and control precision. Passive infrared (PIR) sensors are widely used for motion detection due to their low cost, low power consumption, and reliability in detecting human presence [10]. Temperature and humidity sensors, such as the DHT11 and DHT22 series, provide environmental data that can be used for climate control automation [11]. Relay modules serve as the interface between low-voltage control circuits and higher-voltage loads such as lighting fixtures and motors [12].
 
@@ -266,7 +282,13 @@ The emergence of the internet and wireless networking technologies in the late 1
 
 The modern era of smart home technology began with the introduction of the Nest Learning Thermostat in 2011, which demonstrated the potential of cloud-connected, intelligent home devices [28]. This was followed by the launch of Amazon Echo and the Alexa voice assistant in 2014, which established voice control as a primary interface for home automation [29]. Google Home, Apple HomeKit, and Samsung SmartThings subsequently entered the market, creating an ecosystem of interconnected devices and platforms [30].
 
-Despite these advancements, the reliance on cloud infrastructure has remained a defining characteristic of commercial smart home systems. A 2019 study by Alaa et al. [31] identified cloud dependency as a significant barrier to smart home adoption, citing concerns about privacy, reliability, and internet connectivity requirements. The authors proposed a framework for edge-based smart home processing that could address these concerns, but noted that implementation complexity remained a challenge.
+Despite these advancements, the reliance on cloud infrastructure has remained a defining characteristic of commercial smart home systems. The evolution of home automation is summarized in Figure 2-1.
+
+![Figure 2-1: Home automation evolution timeline](figures/figure-2-1-automation-timeline.png)
+
+*Figure 2-1: Timeline of key developments in home automation technology*
+
+A 2019 study by Alaa et al. [31] identified cloud dependency as a significant barrier to smart home adoption, citing concerns about privacy, reliability, and internet connectivity requirements. The authors proposed a framework for edge-based smart home processing that could address these concerns, but noted that implementation complexity remained a challenge.
 
 ### 2.2. IoT Communication Protocols
 
@@ -326,7 +348,11 @@ The ESP8266 (NodeMCU) is a predecessor to the ESP32 that offers similar Wi-Fi ca
 
 Passive infrared (PIR) sensors detect motion by measuring changes in infrared radiation emitted by objects within their field of view [50]. The sensor element consists of a pyroelectric material that generates a small voltage when exposed to infrared radiation, with the voltage changing as warm objects (such as human bodies) move across the sensor's detection zones.
 
-PIR sensors are widely used in home automation for occupancy detection and security applications due to their low cost (₦1,500–4,500), low power consumption (< 1 mA), and reliability in indoor environments [51]. The HC-SR501 module, used in this work, includes a Fresnel lens that expands the detection field to approximately 120° and a sensitivity adjustment potentiometer that allows configuration of the detection range [52].
+PIR sensors are widely used in home automation for occupancy detection and security applications due to their low cost (₦1,500–4,500), low power consumption (< 1 mA), and reliability in indoor environments [51]. The HC-SR501 module, used in this work, includes a Fresnel lens that expands the detection field to approximately 120° and a sensitivity adjustment potentiometer that allows configuration of the detection range [52]. The detection zones are illustrated in Figure 2-4.
+
+![Figure 2-4: PIR sensor detection zones](figures/figure-2-4-pir-detection-zones.png)
+
+*Figure 2-4: PIR sensor detection zones showing 120° field of view and adjustable range*
 
 A key challenge with PIR sensors is the occurrence of false triggers caused by environmental factors such as air currents, temperature fluctuations, and electromagnetic interference [53]. Software-based debouncing techniques, which require multiple consecutive positive readings before confirming motion detection, are commonly used to mitigate this issue [54].
 
@@ -364,13 +390,25 @@ Multicast DNS (mDNS) is a protocol that enables DNS-like name resolution on loca
 
 DNS-Service Discovery (DNS-SD) extends mDNS to enable the advertisement and discovery of network services [68]. A device can register a service type (e.g., "_http._tcp") and a service name (e.g., "homely-smarthome"), which other devices can query to discover available services on the network.
 
-The ESP32 platform includes built-in support for mDNS through the ESPmDNS library, which allows the device to register a hostname and advertise services [69]. However, mDNS resolution on Android devices has been inconsistent, with some versions of the Android operating system not supporting mDNS resolution from JavaScript contexts in React Native applications [70].
+The ESP32 platform includes built-in support for mDNS through the ESPmDNS library, which allows the device to register a hostname and advertise services [69]. The mDNS discovery process is illustrated in Figure 2-6.
+
+![Figure 2-6: mDNS discovery sequence](figures/figure-2-6-mdns-sequence.png)
+
+*Figure 2-6: mDNS discovery sequence showing hostname resolution via multicast DNS*
+
+However, mDNS resolution on Android devices has been inconsistent, with some versions of the Android operating system not supporting mDNS resolution from JavaScript contexts in React Native applications [70].
 
 #### 2.6.2. UDP Broadcast Discovery
 
 UDP broadcast provides an alternative mechanism for device discovery that does not rely on mDNS support in the client application [71]. In this approach, the IoT device listens on a specific UDP port for broadcast packets containing a discovery request, and responds with its IP address and device information.
 
 The UDP broadcast approach is more universally supported across different platforms and network configurations, as it uses standard UDP socket operations that are available in all modern operating systems [72]. However, it requires the client application to know the UDP port number and may be affected by network configurations that restrict broadcast traffic.
+
+The UDP broadcast discovery process is illustrated in Figure 2-7.
+
+![Figure 2-7: UDP broadcast discovery](figures/figure-2-7-udp-discovery.png)
+
+*Figure 2-7: UDP broadcast discovery sequence showing fallback mechanism when mDNS fails*
 
 In this work, a hybrid discovery approach is implemented that attempts mDNS resolution first and falls back to UDP broadcast if mDNS fails, providing reliable device discovery across diverse network configurations.
 
@@ -411,6 +449,12 @@ The literature review reveals several gaps in existing home automation solutions
 4. **Cost and accessibility.** Commercial solutions involve significant hardware and subscription costs, while open-source alternatives require technical expertise. A low-cost, easy-to-deploy solution that bridges this gap is needed.
 
 5. **Integration documentation.** The practical challenges of integrating multiple hardware components (relays, sensors, power supplies) with firmware and mobile application software are often poorly documented, making it difficult for practitioners to replicate and extend existing designs.
+
+The architectural difference between cloud-dependent and locally-controlled systems is shown in Figure 2-8.
+
+![Figure 2-8: Cloud vs local architecture](figures/figure-2-8-cloud-vs-local.png)
+
+*Figure 2-8: Comparison of cloud-dependent and locally-controlled home automation architectures*
 
 This thesis positions itself at the intersection of these gaps, presenting a complete system that is locally-controlled, automatically discoverable, responsive, low-cost, and thoroughly documented.
 
@@ -855,7 +899,11 @@ The power supply was validated by measuring voltage and current under various op
 | ESP32 active, 4 relays ON | 4.91 | 500 | All relay coils energized |
 | ESP32 active, fan running | 4.85 | 650 | Fan motor draws additional current |
 
-The measurements confirm that the 7805 regulator maintains the 5V rail within acceptable tolerances (±5%) under all operating conditions. The voltage drop under full load (4.85V) is within the ESP32's operating range (min 2.3V for the 3.3V regulator input) and does not trigger brownout protection.
+The measurements confirm that the 7805 regulator maintains the 5V rail within acceptable tolerances (±5%) under all operating conditions. The voltage drop under full load (4.85V) is within the ESP32's operating range (min 2.3V for the 3.3V regulator input) and does not trigger brownout protection. The voltage-current relationship is shown in Figure 4-3.
+
+![Figure 4-3: Voltage vs current under load](figures/figure-4-3-voltage-current.png)
+
+*Figure 4-3: 7805 output voltage vs load current showing ±5% tolerance band*
 
 ### 4.2. Firmware Implementation
 
@@ -1120,7 +1168,11 @@ The device discovery time was measured from application launch to successful con
 
 #### 5.3.2. End-to-End Control Latency
 
-The end-to-end control latency was measured from the moment the user tapped a toggle to the moment the relay contact changed state. With the optimistic UI update pattern, the visual feedback was instantaneous (< 16 ms, single frame), while the actual relay actuation occurred within 150–300 ms of the tap.
+The end-to-end control latency was measured from the moment the user tapped a toggle to the moment the relay contact changed state. With the optimistic UI update pattern, the visual feedback was instantaneous (< 16 ms, single frame), while the actual relay actuation occurred within 150–300 ms of the tap. The latency breakdown is shown in Figure 5-8.
+
+![Figure 5-8: End-to-end latency breakdown](figures/figure-5-8-end-to-end-latency.png)
+
+*Figure 5-8: End-to-end control latency breakdown from user tap to relay actuation*
 
 #### 5.3.3. State Synchronization Accuracy
 
@@ -1138,7 +1190,11 @@ The user interface responsiveness was evaluated by measuring the frame rate duri
 
 #### 5.4.1. Reliability Over Extended Operation
 
-The complete system was operated continuously for 7 days under normal conditions (daily motion events, temperature fluctuations, and periodic manual control). The system operated without failures throughout the test period, with all sensors providing consistent readings and all relays responding correctly to commands.
+The complete system was operated continuously for 7 days under normal conditions (daily motion events, temperature fluctuations, and periodic manual control). The system operated without failures throughout the test period, with all sensors providing consistent readings and all relays responding correctly to commands. The operation timeline is shown in Figure 5-10.
+
+![Figure 5-10: 7-day operation timeline](figures/figure-5-10-7day-operation.png)
+
+*Figure 5-10: 7-day continuous operation timeline showing zero failures*
 
 #### 5.4.2. Network Resilience
 
