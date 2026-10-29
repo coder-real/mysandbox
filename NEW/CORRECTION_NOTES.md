@@ -1,11 +1,11 @@
 # SIWES report correction notes
 
-The 12 Word reports in this folder have been edited. The original reports remain available in the repository's `main` branch.
+The 12 Word reports in this folder have been edited. The prior reports remain available in the repository history. The cover and title pages are now separate sections: the cover is unnumbered, the title page starts at i, the remaining preliminaries continue in Roman numerals, and the main text starts at 1. The Functions of the Agencies section was removed; the subsequent Chapter One sections were renumbered.
 
 ## Before submission
 
 1. Open each report in Microsoft Word. If Word asks whether to update fields, choose **Yes**. Then press **Ctrl+A**, **F9** and choose **Update entire table** for the table of contents. Repeat the field update if needed. The table, figure, plate and appendix lists contain page-reference fields; `?` means that a field has not yet been updated.
-2. Inspect the cover, title page, front-matter numbering, page breaks, table captions, images, certificate and all lists after updating. These files could not be rendered in this workspace; pagination and one-page abstract fit have not been visually verified.
+2. Inspect the cover, title page, front-matter numbering, page breaks, table captions, images, certificate and all lists after updating. The blank certificate in Appendix I is an intentional sample form, not a duplicate cover. These files could not be rendered in this workspace; pagination and one-page abstract fit have not been visually verified.
 3. The supplied certificate image is a **blank form**, included as a sample. It does not verify the entries in Table 13. The report's specific entries should be checked against the completed document or field notes.
 4. The plot coordinates, 150 m altitude, College-run programme, October dates and sample certificate were applied to all 12 reports on the user's instruction. The site is identified as Cross River National Park without asserting that it was a disturbed or edge area. The grassland and farming observations should still be checked against field notes if there is any doubt.
 5. Formalin is described as a preservative and cotton wool as stuffing, not as a method of euthanasia. The precise method remains unspecified and should be verified with the instructor if required.
