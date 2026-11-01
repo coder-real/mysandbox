@@ -6,6 +6,7 @@ Uses only the Python standard library. See README.md for important limitations.
 import argparse
 import gzip
 import html
+import http.client
 import io
 import json
 import os
@@ -13,6 +14,7 @@ from pathlib import Path
 import re
 import shutil
 import sqlite3
+import ssl
 import sys
 import tempfile
 import time
@@ -43,38 +45,71 @@ def mysql_unescape(value):
     return re.sub(r'\\(.)', replacement, value, flags=re.DOTALL)
 
 
-def open_url(url):
-    request = urllib.request.Request(url, headers={'User-Agent': 'scrollmapper-bblx-converter/1.0', 'Accept': 'application/vnd.github+json'})
+def fetch(url, destination, expected_size=None, parse_json=False):
+    """Retry the entire response, including reads; never accept a short body."""
+    request = urllib.request.Request(url, headers={
+        'User-Agent': 'scrollmapper-bblx-converter/1.1',
+        'Accept': 'application/vnd.github+json',
+    })
+    network_errors = (urllib.error.URLError, http.client.HTTPException,
+                      TimeoutError, ConnectionError, ssl.SSLError,
+                      json.JSONDecodeError, UnicodeDecodeError)
     for attempt in range(4):
+        destination.seek(0)
+        destination.truncate()
         try:
-            return urllib.request.urlopen(request, timeout=120)
-        except (urllib.error.URLError, TimeoutError) as exc:
+            with urllib.request.urlopen(request, timeout=120) as response:
+                shutil.copyfileobj(response, destination, length=1024 * 1024)
+                actual_size = destination.tell()
+                header = response.headers.get('Content-Length')
+                if header is not None and actual_size != int(header):
+                    raise ValueError(f'Truncated response: expected {header} bytes, received {actual_size}')
+                if expected_size is not None and actual_size != expected_size:
+                    raise ValueError(f'Expected {expected_size} bytes but received {actual_size}')
+            if parse_json:
+                destination.seek(0)
+                return json.load(destination)
+            return None
+        except network_errors + (ValueError,) as exc:
+            if isinstance(exc, urllib.error.HTTPError) and exc.code not in (408, 429, 500, 502, 503, 504):
+                raise RuntimeError(f'Cannot download {url}: HTTP {exc.code} {exc.reason}') from exc
             if attempt == 3:
-                raise RuntimeError(f'Cannot download {url}: {exc}') from exc
+                raise RuntimeError(f'Cannot download {url} after 4 attempts: {exc}') from exc
+            print(f'  Download interrupted ({exc}); retrying ({attempt + 1}/3)...', file=sys.stderr, flush=True)
             time.sleep(2 ** attempt)
 
 
-def download(url, path):
-    with open_url(url) as response, open(path, 'wb') as out:
-        shutil.copyfileobj(response, out, length=1024 * 1024)
+def download(url, path, expected_size=None):
+    """Write to a temporary sibling and only publish a verified complete file."""
+    path = Path(path)
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w+b', dir=path.parent, delete=False) as out:
+            temporary = Path(out.name)
+            fetch(url, out, expected_size=expected_size)
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
 
 
 def catalogue(revision):
-    with open_url(TREE + revision + '?recursive=1') as response:
-        tree = json.load(response)
+    with io.BytesIO() as buffer:
+        tree = fetch(TREE + revision + '?recursive=1', buffer, parse_json=True)
     if tree.get('truncated'):
         raise RuntimeError('GitHub returned an incomplete tree; cannot safely enumerate translations')
-    paths = [item['path'] for item in tree['tree'] if item['type'] == 'blob']
-    sql = {p.rsplit('/', 1)[1][:-4]: p for p in paths
-           if re.fullmatch(r'formats/sql/[A-Za-z0-9_-]+\.sql', p)
-           and not p.rsplit('/', 1)[1].startswith('cross_references_')}
+    blobs = [item for item in tree['tree'] if item['type'] == 'blob']
+    sql = {item['path'].rsplit('/', 1)[1][:-4]: (item['path'], item['size']) for item in blobs
+           if re.fullmatch(r"formats/sql/[A-Za-z0-9_-]+\.sql", item['path'])
+           and not item['path'].rsplit('/', 1)[1].startswith('cross_references_')}
     osis = {}
-    for path in paths:
+    for item in blobs:
+        path = item['path']
         match = re.fullmatch(r'sources/([^/]+)/([^/]+)/([^/]+)-osis\.json', path)
         if match and match.group(2) == match.group(3):
             if match.group(2) in osis:
                 raise RuntimeError('Ambiguous OSIS source for ' + match.group(2))
-            osis[match.group(2)] = (match.group(1), path)
+            osis[match.group(2)] = (match.group(1), path, item['size'])
     if not sql:
         raise RuntimeError('No translation SQL files found in source tree')
     return sql, osis
@@ -208,15 +243,16 @@ def main():
             try:
                 if name not in osis:
                     raise ValueError('No OSIS source found; refusing to omit annotations')
-                lang, osis_path = osis[name]
+                lang, osis_path, osis_size = osis[name]
+                sql_path, sql_size = sql[name]
                 local_sql = Path(tmp) / 'source.sql'
                 local_osis = Path(tmp) / 'source.osis.json'
                 local_db = Path(tmp) / 'module.bblx'
                 for p in (local_sql, local_osis, local_db):
                     p.unlink(missing_ok=True)
-                download(ROOT + REVISION + '/' + sql[name], local_sql)
+                download(ROOT + REVISION + '/' + sql_path, local_sql, expected_size=sql_size)
                 result = convert_sql(local_sql, local_db, name, lang)
-                download(ROOT + REVISION + '/' + osis_path, local_osis)
+                download(ROOT + REVISION + '/' + osis_path, local_osis, expected_size=osis_size)
                 # Validate the downloaded file before including it.
                 with local_osis.open(encoding='utf-8') as f:
                     data = json.load(f)

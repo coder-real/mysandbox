@@ -49,6 +49,10 @@ On Windows replace `python3` with `py -3`. Use `--output` to choose another fold
 
 The script returns a nonzero exit status if a translation failed or any verses could not be mapped, even though it still writes completed modules, a report and, when requested, a ZIP. A successful exit does **not** mean annotations were converted or that e-Sword compatibility was tested.
 
+### Connection problems
+
+The script retries interrupted catalogue and source-file downloads up to three times. It checks the catalogue response length when provided and checks source-file lengths against the pinned GitHub catalogue. If it still fails with an `IncompleteRead` or connection error, check your internet connection and rerun. A failure while reading the catalogue happens before the output folder is created, so you can run the same command again. If the output folder or ZIP already exists, use a new `--output` name; consult `conversion-report.json` for any translations that need retrying.
+
 The source revision is pinned to `59b18c5af5845728c275d5b7178ad0d024172b1f` for reproducibility; the catalogue contained 140 translations at that revision. Later upstream additions are not automatically included. Original project: https://github.com/scrollmapper/bible_databases
 
 ## Install and test
